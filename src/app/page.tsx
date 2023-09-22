@@ -145,7 +145,7 @@ export default function Home() {
                   ) :
                     <div id='availability-block'>
                       {availabilities.map((item: any) => (
-                        <button key={item.id} type="button" onClick={() => handleSelectAvailability(item)} className={`inline-flex w-full justify-center rounded-md ${item.is_available === 1 ? 'bg-gray-100 cursor-not-allowed' : 'bg-green-100 hover:bg-green-300 hover:text-green-900'} px-3 py-2 text-sm font-medium text-green-800  shadow-sm  sm:mr-3 sm:w-auto`}>{item.start} - {item.end}</button>
+                        <button key={item.id} type="button" onClick={() => handleSelectAvailability(item)} className={`inline-flex w-full justify-center rounded-md ${item.is_available === 1 ? 'bg-gray-100 cursor-not-allowed' : 'bg-green-100 hover:bg-green-300 hover:text-green-900'} px-3 py-2 text-sm font-medium text-green-800 mb-3 shadow-sm  sm:mr-3 sm:w-auto`}>{item.start} - {item.end}</button>
                       ))}
                     </div>
                   }
