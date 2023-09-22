@@ -6,9 +6,43 @@ export default function Home() {
   const [availabilities, setAvailabilities] = useState([]);
   const [toggleForm, setToggleForm] = useState(false);
   const [selectedAvailabilityId, setSelectedAvailabilityId] = useState(null)
-  const [selectedAvailability, setSelectedAvailability] = useState("")
-  const [backForm, setBackForm] = useState(false);
+  const [selectedAvailability, setSelectedAvailability] = useState({
+    start: '',
+    end: '',
+    id: null
+  })
+  const [formData, setFormData] = useState({
+    title: '',
+    email: '',
+    availability_id: null,
+  });
   const [loading, setLoading] = useState(true);
+
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    try {
+      const apiUrl = 'http://127.0.0.1:8000/reservations';
+      const response = await axios.post(apiUrl, {
+        ...formData,
+        availability_id: selectedAvailabilityId,
+        start: selectedAvailability.start,
+        end: selectedAvailability.end
+      });
+      console.log('Response from server:', response.data);
+      setFormData({
+        title: '',
+        email: '',
+        availability_id: null
+      });
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
 
   useEffect(() => {
     axios.get('http://127.0.0.1:8000/availabilities')
@@ -24,10 +58,14 @@ export default function Home() {
   }, []);
 
   const handleSelectAvailability = (item: any) => {
-    // Update the counter when the button is clicked
-    setToggleForm(!toggleForm);
-    setSelectedAvailabilityId(item.id)
-    setSelectedAvailability(`${item.start} - ${item.end}`)
+    if (item.is_available === 0) {
+      // Update the counter when the button is clicked
+      setToggleForm(!toggleForm);
+      setSelectedAvailabilityId(item.id)
+      setSelectedAvailability(item)
+    } else {
+      return;
+    }
   };
   
   return (
@@ -68,18 +106,19 @@ export default function Home() {
                 <div className="mt-7 mb-7">
                   {toggleForm ? (
                     <div id="reservation-for">
-                      <form>
+                      <form onSubmit={handleSubmit}>
                         <div className="space-y-12">
                           <div className="border-b border-gray-900/10 pb-12">
                             <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                               <div className="sm:col-span-6">
-                              <div className="inline-flex w-full justify-center rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 shadow-sm sm:mr-3 sm:w-auto">{selectedAvailability}</div>
+                                <div className="inline-flex w-full justify-center rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 shadow-sm sm:mr-3 sm:w-auto">{`${selectedAvailability.start} - ${selectedAvailability.end}`}</div>
                               </div>
                               <div className="sm:col-span-6">
                                 <label className="block text-sm font-medium leading-6 text-gray-900">Title</label>
                                 <div className="mt-2">
                                   <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                                    <input type="text" name="title" id="title" autoComplete='off' className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 focus:outline-none placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" placeholder="" />
+                                    <input required type="text" value={formData.title}
+                                      onChange={handleInputChange} name="title" id="title" autoComplete='off' className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 focus:outline-none placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" placeholder="" />
                                   </div>
                                 </div>
                               </div>
@@ -87,30 +126,31 @@ export default function Home() {
                                 <label className="block text-sm font-medium leading-6 text-gray-900">Email</label>
                                 <div className="mt-2">
                                   <div className="flex rounded-md shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus-within:ring-2 focus-within:ring-inset focus-within:ring-indigo-600 sm:max-w-md">
-                                    <input type="email" name="email" id="email" autoComplete='off' className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 focus:outline-none placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" placeholder="" />
+                                    <input required type="email" value={formData.email}
+                                      onChange={handleInputChange} name="email" id="email" autoComplete='off' className="block flex-1 border-0 bg-transparent py-1.5 pl-1 text-gray-900 focus:outline-none placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6" placeholder="" />
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
+                        {toggleForm ? (
+                          <div className="px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button type="submit" className="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 sm:ml-3 sm:w-auto">Submit</button>
+                            <button type="button" onClick={() => setToggleForm(false)} className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Back</button>
+                          </div>
+                        ) : null}
                       </form>
                     </div>
                   ) :
                     <div id='availability-block'>
                       {availabilities.map((item: any) => (
-                        <button key={item.id} type="button" onClick={() => handleSelectAvailability(item)} className="inline-flex w-full justify-center rounded-md bg-green-100 px-3 py-2 text-sm font-medium text-green-800 hover:text-green-900 shadow-sm hover:bg-green-300 sm:mr-3 sm:w-auto">{item.start} - {item.end}</button>
+                        <button key={item.id} type="button" onClick={() => handleSelectAvailability(item)} className={`inline-flex w-full justify-center rounded-md ${item.is_available === 1 ? 'bg-gray-100 cursor-not-allowed' : 'bg-green-100 hover:bg-green-300 hover:text-green-900'} px-3 py-2 text-sm font-medium text-green-800  shadow-sm  sm:mr-3 sm:w-auto`}>{item.start} - {item.end}</button>
                       ))}
                     </div>
                   }
                 </div>
               </div>
-              {toggleForm ? (
-                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                  {/* <button type="button" className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto">Deactivate</button> */}
-                  <button type="button" onClick={() => setToggleForm(false)} className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Back</button>
-                </div>
-              ): null }
             </div>
           </div>
         </main>
