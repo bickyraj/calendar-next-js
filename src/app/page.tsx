@@ -6,6 +6,7 @@ export default function Home() {
   const [availabilities, setAvailabilities] = useState([]);
   const [toggleForm, setToggleForm] = useState(false);
   const [selectedAvailabilityId, setSelectedAvailabilityId] = useState(null)
+  const [laodNotification, setLaodNotification] = useState(false)
   const [selectedAvailability, setSelectedAvailability] = useState({
     start: '',
     end: '',
@@ -33,18 +34,25 @@ export default function Home() {
         start: selectedAvailability.start,
         end: selectedAvailability.end
       });
-      console.log('Response from server:', response.data);
+      // console.log('Response from server:', response.data);
       setFormData({
         title: '',
         email: '',
         availability_id: null
       });
+      setToggleForm(!toggleForm)
+      fetchAvailabilities()
+      setLaodNotification(true)
+      setTimeout(() => {
+        setLaodNotification(false)
+      }, 2000);
+
     } catch (error) {
       console.error('Error:', error);
     }
   };
 
-  useEffect(() => {
+  const fetchAvailabilities = () => {
     axios.get('http://127.0.0.1:8000/availabilities')
       .then((response) => {
         console.log(response.data);
@@ -55,6 +63,10 @@ export default function Home() {
         console.error('Error fetching data:', error);
         setLoading(false);
       });
+  }
+
+  useEffect(() => {
+    fetchAvailabilities()
   }, []);
 
   const handleSelectAvailability = (item: any) => {
@@ -70,6 +82,16 @@ export default function Home() {
   
   return (
     <>
+      {laodNotification ? (
+      <div className="fixed top-20 right-5 p-2 bg-green-600 items-center text-green-100 leading-none rounded-sm flex lg:inline-flex" role="alert">
+          {/* <span className="flex rounded-full bg-green-500 uppercase px-2 py-1 text-xs font-bold mr-3">Done</span> */}
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="pr-1 w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+
+          <span className="font-medium mr-2 text-left flex-auto">Your meeting has been set.</span>
+        </div>
+      ): null}
       <div className="min-h-full">
         <nav className="bg-gray-800">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
